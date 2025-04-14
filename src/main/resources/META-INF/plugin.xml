@@ -1,0 +1,46 @@
+<!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
+<idea-plugin>
+  <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
+  <id>dk.ave.classic-asp-support</id>
+
+  <!-- Public plugin name should be written in Title Case.
+       Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-name -->
+  <name>Classic ASP Support</name>
+
+  <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
+  <vendor email="alexanderv.eriksen@gmail.com" url="https://github.com/alex-eriksen">Alexander V. Eriksen</vendor>
+
+  <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
+       Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
+       Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
+  <description>Adds language support for Classic ASP - Syntax highlighting.</description>
+
+  <idea-version since-build="243"/>
+
+  <!-- Product and plugin compatibility requirements.
+       Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
+  <depends>com.intellij.modules.platform</depends>
+
+  <!-- Extension points defined by the plugin.
+       Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
+  <extensions defaultExtensionNs="com.intellij">
+    <fileType
+      name="Classic ASP File"
+      implementationClass="dk.ave.classic_asp_support.language.ASPFileType"
+      fieldName="INSTANCE"
+      language="ClassicASP"
+      extensions="asp"
+    />
+    <lang.parserDefinition
+      language="ClassicASP"
+      implementationClass="dk.ave.classic_asp_support.language.ASPParserDefinition"
+    />
+    <lang.syntaxHighlighterFactory
+      language="ClassicASP"
+      implementationClass="dk.ave.classic_asp_support.language.ASPSyntaxHighlighterFactory"
+    />
+    <colorSettingsPage
+      implementation="dk.ave.classic_asp_support.language.ASPColorSettingsPage"
+    />
+  </extensions>
+</idea-plugin>

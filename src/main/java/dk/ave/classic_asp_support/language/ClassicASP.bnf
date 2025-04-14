@@ -1,0 +1,110 @@
+{
+    parserClass="dk.ave.classic_asp_support.language.parser.ASPParser"
+
+    extends="com.intellij.extapi.psi.ASTWrapperPsiElement"
+
+    psiClassPrefix="ASP"
+    psiImplClassSuffix="Impl"
+    psiPackage="dk.ave.classic_asp_support.language.psi"
+    psiImplPackage="dk.ave.classic_asp_support.language.psi.impl"
+
+    elementTypeHolderClass="dk.ave.classic_asp_support.language.psi.ASPTypes"
+    elementTypeClass="dk.ave.classic_asp_support.language.psi.ASPElementType"
+    tokenTypeClass="dk.ave.classic_asp_support.language.psi.ASPTokenType"
+}
+
+/*
+ * The starting point of the ASP file.
+ * An ASP file is a sequence of content items, which may be HTML, ASP code or simple newlines.
+ */
+aspFile ::= aspContent*;
+
+/*
+ * Each content item in the file can be one of:
+ * - HTML content (plain text, tags, or comments)
+ * - An embedded ASP block
+ * - A newline (CRLF)
+ */
+private aspContent ::= htmlContent | aspBlock | CRLF;
+
+/*
+ * HTML content is modeled as either plain text, a tag, or an HTML comment.
+ */
+htmlContent ::= HTML_TEXT
+                | HTML_LESS_THAN
+                | htmlElement
+                | htmlComment;
+
+htmlElement ::= HTML_TAG;
+
+htmlComment ::= HTML_COMMENT_START htmlContent* HTML_COMMENT_END;
+
+/*
+ * An ASP block can be either a code block or an echo block.
+ * They start with different tokens (<% for code, <%= for echo) and both end with ASP_CODE_END.
+ */
+aspBlock ::= aspCodeBlock | aspEchoBlock;
+
+aspCodeBlock ::= ASP_CODE_START aspStatements? ASP_CODE_END;
+aspEchoBlock ::= ASP_ECHO_START aspExpression? ASP_CODE_END;
+
+/*
+ * Within an ASP block, you can have a series of statements.
+ */
+aspStatements ::= aspStatement+;
+
+/*
+ * A statement may be one of several forms:
+ * - Conditional statements (if...then...else...end)
+ * - For loops
+ * - Assignments
+ * - Expression statements (optionally ended with a semicolon)
+ * - Or any unclassified content (ASP_OTHER)
+ */
+aspStatement ::= aspIfStatement
+               | aspForStatement
+               | aspAssignment
+               | aspExpressionStatement
+               | ASP_OTHER;
+
+/*
+ * Example of an if-statement in ASP (VBScript style).
+ */
+aspIfStatement ::= ASP_KEYWORD_IF aspExpression ASP_KEYWORD_THEN aspStatements ( ASP_KEYWORD_ELSE aspStatements )? ASP_KEYWORD_END;
+
+/*
+ * Example of a For-loop. (Optionally, you can specify an operator and a “to” clause if desired.)
+ * Note: If you need to support a “to” clause, ensure your lexer and token types include a token (e.g. ASP_KEYWORD_TO).
+ */
+aspForStatement ::= ASP_KEYWORD_FOR ASP_IDENTIFIER ASP_OPERATOR aspExpression ( ASP_KEYWORD_TO aspExpression )? aspStatements? ASP_KEYWORD_NEXT;
+
+/*
+ * An assignment is modeled as an identifier, an operator, and an expression.
+ */
+aspAssignment ::= ASP_IDENTIFIER ASP_OPERATOR aspExpression;
+
+/*
+ * An expression statement is an expression that can optionally be ended with a semicolon.
+ */
+aspExpressionStatement ::= aspExpression ASP_SEMICOLON?;
+
+/*
+ * A very simple expression rule that supports a sequence of terms joined by operators.
+ */
+aspExpression ::= aspTerm ( ASP_OPERATOR aspTerm )*;
+
+/*
+ * An expression term may be:
+ * - An identifier, a number, or a string
+ * - A parenthesized expression (using literal "(" and ")" for grouping)
+ * - A fallback ASP_OTHER token (e.g. if no other rule matches)
+ */
+aspTerm ::= ASP_IDENTIFIER
+          | ASP_NUMBER
+          | ASP_STRING
+          | ASP_KEYWORD_DIM
+          | ASP_KEYWORD_SET
+          | ASP_PARENTHESIS
+          | ASP_DOT
+          | ASP_COMMA
+          | ASP_OTHER;
