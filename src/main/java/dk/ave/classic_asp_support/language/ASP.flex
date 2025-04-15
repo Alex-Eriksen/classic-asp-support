@@ -74,41 +74,42 @@ import dk.ave.classic_asp_support.language.psi.ASPTypes;
   ")" { return ASPTypes.ASP_RPAREN; }
   "," { return ASPTypes.ASP_COMMA; }
 
+      // Arithmetic operators
+      "+"      { return ASPTypes.ASP_OPERATOR; }
+      "-"      { return ASPTypes.ASP_OPERATOR; }
+      "*"      { return ASPTypes.ASP_OPERATOR; }
+      "/"      { return ASPTypes.ASP_OPERATOR; }
+      "%"      { return ASPTypes.ASP_OPERATOR; }
+      "^"      { return ASPTypes.ASP_OPERATOR; }
+
+      // Comparison operators
+      "="      { return ASPTypes.ASP_OPERATOR_ASSIGNMENT; }
+      "<>"     { return ASPTypes.ASP_OPERATOR; }
+      ">"      { return ASPTypes.ASP_OPERATOR; }
+      "<"      { return ASPTypes.ASP_OPERATOR; }
+      "<="     { return ASPTypes.ASP_OPERATOR; }
+      ">="     { return ASPTypes.ASP_OPERATOR; }
+
+      // Logical operators
+      (A|a)(N|n)(D|d)     { return ASPTypes.ASP_LOGICAL_OPERATOR; }
+      (O|o)(R|r)          { return ASPTypes.ASP_LOGICAL_OPERATOR; }
+      (N|n)(O|o)(T|t)     { return ASPTypes.ASP_LOGICAL_OPERATOR; }
+      (X|x)(O|o)(R|r)     { return ASPTypes.ASP_LOGICAL_OPERATOR; }
+
+      // Concatination operators
+      "&"      { return ASPTypes.ASP_OPERATOR; }
+
+    // Numeric literals (integer and floating point)
+    [0-9]+(\.[0-9]+)?      { return ASPTypes.ASP_NUMBER; }
+
   // Identifiers (variables, function names, etc.)
   [a-zA-Z_][a-zA-Z0-9_]*  { return ASPTypes.ASP_IDENTIFIER; }
 
-    // Numeric literals (integer and floating point)
-    [0-9].*[0-9]+      { return ASPTypes.ASP_NUMBER; }
 
     // String literals (double-quoted)
     \"[^\"\r\n]*\"      { return ASPTypes.ASP_STRING; }
 
     // Comment
-
-    // Arithmetic operators
-    "+"      { return ASPTypes.ASP_OPERATOR; }
-    "-"      { return ASPTypes.ASP_OPERATOR; }
-    "*"      { return ASPTypes.ASP_OPERATOR; }
-    "/"      { return ASPTypes.ASP_OPERATOR; }
-    "%"      { return ASPTypes.ASP_OPERATOR; }
-    "^"      { return ASPTypes.ASP_OPERATOR; }
-
-    // Comparison operators
-    "="      { return ASPTypes.ASP_OPERATOR_ASSIGNMENT; }
-    "<>"     { return ASPTypes.ASP_OPERATOR; }
-    ">"      { return ASPTypes.ASP_OPERATOR; }
-    "<"      { return ASPTypes.ASP_OPERATOR; }
-    "<="     { return ASPTypes.ASP_OPERATOR; }
-    ">="     { return ASPTypes.ASP_OPERATOR; }
-
-    // Logical operators
-    (A|a)(N|n)(D|d)     { return ASPTypes.ASP_LOGICAL_OPERATOR; }
-    (O|o)(R|r)          { return ASPTypes.ASP_LOGICAL_OPERATOR; }
-    (N|n)(O|o)(T|t)     { return ASPTypes.ASP_LOGICAL_OPERATOR; }
-    (X|x)(O|o)(R|r)     { return ASPTypes.ASP_LOGICAL_OPERATOR; }
-
-    // Concatination operators
-    "&"      { return ASPTypes.ASP_OPERATOR; }
 
   <NEW_INSTANCE> {
       \r?\n {

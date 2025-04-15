@@ -22,6 +22,7 @@ public final class ASPColorSettingsPage implements ColorSettingsPage {
             new AttributesDescriptor("Class", ASPSyntaxHighlighter.INSTANCE),
             new AttributesDescriptor("Identifiers//String", ASPSyntaxHighlighter.STRING),
             new AttributesDescriptor("Identifiers//Variable", ASPSyntaxHighlighter.IDENTIFIER),
+            new AttributesDescriptor("Identifiers//Number", ASPSyntaxHighlighter.NUMBER),
     };
 
     @Override

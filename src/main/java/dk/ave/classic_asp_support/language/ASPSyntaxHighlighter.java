@@ -15,6 +15,7 @@ public class ASPSyntaxHighlighter extends SyntaxHighlighterBase {
     public static final TextAttributesKey COMMENT = TextAttributesKey.createTextAttributesKey("ASP_COMMENT", DefaultLanguageHighlighterColors.LINE_COMMENT);
     public static final TextAttributesKey IDENTIFIER = TextAttributesKey.createTextAttributesKey("ASP_IDENTIFIER", DefaultLanguageHighlighterColors.IDENTIFIER);
     public static final TextAttributesKey STRING = TextAttributesKey.createTextAttributesKey("ASP_STRING", DefaultLanguageHighlighterColors.STRING);
+    public static final TextAttributesKey NUMBER = TextAttributesKey.createTextAttributesKey("ASP_NUMBER", DefaultLanguageHighlighterColors.NUMBER);
     public static final TextAttributesKey INSTANCE = TextAttributesKey.createTextAttributesKey("ASP_INSTANCE", DefaultLanguageHighlighterColors.CLASS_REFERENCE);
     public static final TextAttributesKey PROCEDURE = TextAttributesKey.createTextAttributesKey("ASP_PROCEDURE", DefaultLanguageHighlighterColors.INSTANCE_METHOD);
 
@@ -24,6 +25,7 @@ public class ASPSyntaxHighlighter extends SyntaxHighlighterBase {
     private static final TextAttributesKey[] OPERATOR_KEYS = new TextAttributesKey[]{OPERATOR};
     private static final TextAttributesKey[] IDENTIFIER_KEYS = new TextAttributesKey[]{IDENTIFIER};
     private static final TextAttributesKey[] STRING_KEYS = new TextAttributesKey[]{STRING};
+    private static final TextAttributesKey[] NUMBER_KEYS = new TextAttributesKey[]{NUMBER};
     private static final TextAttributesKey[] INSTANCES_KEYS = new TextAttributesKey[]{INSTANCE};
     private static final TextAttributesKey[] PROCEDURES_KEYS = new TextAttributesKey[]{PROCEDURE};
     private static final TextAttributesKey[] EMPTY_KEYS = new TextAttributesKey[0];
@@ -56,6 +58,9 @@ public class ASPSyntaxHighlighter extends SyntaxHighlighterBase {
         }
         if(tokenType.equals(ASPTypes.ASP_STRING)) {
             return STRING_KEYS;
+        }
+        if(tokenType.equals(ASPTypes.ASP_NUMBER)) {
+            return NUMBER_KEYS;
         }
         if(tokenType.equals(ASPTypes.ASP_IDENTIFIER)) {
             return IDENTIFIER_KEYS;

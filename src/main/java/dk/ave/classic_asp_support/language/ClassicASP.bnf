@@ -54,7 +54,7 @@ aspStatements ::= aspStatement+;
  */
 aspStatement ::= aspProcedure
                | aspIfStatement
-               | aspCallFunction
+               | aspCallFunctionDiscardReturn
                | aspForStatement
                | aspWhileStatement
                | aspNewInstanceStatement
@@ -63,6 +63,7 @@ aspStatement ::= aspProcedure
                | aspCommentExpression
                | aspDimStatement
                | aspSetStatement
+               | functionCall
                | ASP_OTHER;
 
 /*
@@ -74,28 +75,29 @@ aspFunctionDefinition ::= ASP_KEYWORD_FUNCTION ASP_FUNCTION_NAME functionParamet
 
 aspSubDefinition ::= ASP_KEYWORD_SUB ASP_IDENTIFIER functionParameterList? CRLF aspStatements? ASP_KEYWORD_END ASP_KEYWORD_SUB;
 
-aspCallFunction ::= ASP_KEYWORD_CALL aspFunctionDefinition
+aspCallFunctionDiscardReturn ::= ASP_KEYWORD_CALL ASP_FUNCTION_NAME functionParameterList?
 
 /*
  * A comma-separated parameter list enclosed in parentheses.
  */
 functionParameterList ::= ASP_LPAREN parameterList? ASP_RPAREN;
-parameterList ::= ASP_IDENTIFIER | ASP_IDENTIFIER ( ASP_COMMA ASP_IDENTIFIER )*;
+functionCall ::= ASP_FUNCTION_NAME ASP_LPAREN [argumentList] ASP_RPAREN;
+parameterList ::= ASP_IDENTIFIER ( ASP_COMMA ASP_IDENTIFIER )*;
+argumentList ::= aspTerm ( ASP_COMMA aspTerm )*;
 
 /*
  * Expression rules.
  * Modify aspTerm to support object member access using dot notation.
  */
-aspExpression ::= ASP_LOGICAL_OPERATOR? aspTerm ( ASP_OPERATOR aspTerm )*;
+aspExpression ::= ASP_LOGICAL_OPERATOR? aspPrimary ( ASP_OPERATOR aspPrimary )*;
 
 /*
  * Instead of a flat aspTerm, we introduce aspPrimary so that it can optionally
  * be followed by one or more dot-access parts.
  */
-aspTerm ::= aspPrimary;
+aspTerm ::= functionCall | aspPrimary;
 
-aspPrimary ::= ( ASP_IDENTIFIER | ASP_NUMBER | ASP_STRING | ASP_LPAREN aspExpression ASP_RPAREN )
-             ( ASP_DOT ( ASP_IDENTIFIER | ASP_NUMBER | ASP_STRING | ASP_LPAREN aspExpression ASP_RPAREN ) )*;
+aspPrimary ::= ( ASP_IDENTIFIER | ASP_NUMBER | ASP_STRING);
 
 /*
  * Other existing rules remain unchanged (if, for, assignment, etc.).
@@ -103,11 +105,11 @@ aspPrimary ::= ( ASP_IDENTIFIER | ASP_NUMBER | ASP_STRING | ASP_LPAREN aspExpres
 aspIfStatement ::= ASP_KEYWORD_IF aspExpression ASP_KEYWORD_THEN aspStatements ( ASP_KEYWORD_ELSE aspStatements )? ASP_KEYWORD_END;
 aspForStatement ::= ASP_KEYWORD_FOR ASP_IDENTIFIER ASP_OPERATOR aspExpression ( ASP_KEYWORD_TO aspExpression )? aspStatements? ASP_KEYWORD_NEXT;
 aspWhileStatement ::= ASP_KEYWORD_WHILE aspExpression aspStatements? ASP_KEYWORD_WEND;
-aspAssignment ::= ASP_IDENTIFIER ASP_OPERATOR aspExpression;
+aspAssignment ::= ASP_IDENTIFIER ASP_OPERATOR_ASSIGNMENT aspExpression;
 aspExpressionStatement ::= aspExpression;
 aspCommentExpression ::= aspExpressionStatement? ASP_COMMENT;
 aspDimStatement ::= ASP_KEYWORD_DIM aspCommaSeparatedIdentifier;
 aspSetStatement ::= ASP_KEYWORD_SET ASP_IDENTIFIER ASP_OPERATOR_ASSIGNMENT? aspExpression;
 aspNewInstanceStatement ::= ASP_KEYWORD_SET ASP_IDENTIFIER ASP_OPERATOR_ASSIGNMENT ASP_KEYWORD_NEW ASP_INSTANCE
 
-aspCommaSeparatedIdentifier ::= aspTerm | ( aspTerm ASP_COMMA )*;
+aspCommaSeparatedIdentifier ::= ASP_IDENTIFIER (ASP_COMMA ASP_IDENTIFIER)*;
