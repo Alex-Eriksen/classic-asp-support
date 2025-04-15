@@ -74,16 +74,18 @@ java {
 //  )
 //}
 
-//tasks {
-//  runIde {
-//    systemProperties["idea.auto.reload.plugins"] = false
-//    jvmArgs = listOf(
-//      "-Xms512m",
-//      "-Xmx2048m",
-//    )
-//  }
-//
-//  jar {
-//    archiveBaseName.set("classic-asp-support")
-//  }
-//}
+tasks {
+  runIde {
+    systemProperties["idea.auto.reload.plugins"] = false
+    jvmArgs = listOf(
+      "-Xms512m",
+      "-Xmx2048m",
+    )
+
+    args = listOf("C:\\Users\\Alexander\\IdeaProjects\\testproject")
+  }
+
+  jar {
+    archiveBaseName.set("classic-asp-support")
+  }
+}

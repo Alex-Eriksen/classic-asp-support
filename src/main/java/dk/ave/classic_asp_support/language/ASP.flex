@@ -13,6 +13,8 @@ import dk.ave.classic_asp_support.language.psi.ASPTypes;
 %unicode
 
 %state ASP_CODE
+%state NEW_INSTANCE
+%state FUNCTION
 
 %%
 
@@ -43,47 +45,110 @@ import dk.ave.classic_asp_support.language.psi.ASPTypes;
   // End of the ASP block. Switch back to HTML mode.
   "%>"         { yybegin(YYINITIAL); return ASPTypes.ASP_CODE_END; }
 
-  // Recognize some VBScript keywords (expand as needed)
-  (I|i)(F|f)              { return ASPTypes.ASP_KEYWORD_IF; }
-  (T|t)(H|h)(E|e)(N|n)    { return ASPTypes.ASP_KEYWORD_THEN; }
-  (E|e)(L|l)(S|s)(E|e)    { return ASPTypes.ASP_KEYWORD_ELSE; }
-  (E|e)(N|n)(D|d)         { return ASPTypes.ASP_KEYWORD_END; }
-  (F|f)(O|o)(R|r)         { return ASPTypes.ASP_KEYWORD_FOR; }
-  (N|n)(E|e)(X|x)(T|t)    { return ASPTypes.ASP_KEYWORD_NEXT; }
-  (D|d)(I|i)(M|m)         { return ASPTypes.ASP_KEYWORD_DIM; }
-  (S|s)(E|e)(T|t)         { return ASPTypes.ASP_KEYWORD_SET; }
-  // Add more VBScript keywords as needed
+    \'[^\r\n]*      { return ASPTypes.ASP_COMMENT; }
+
+  // Keywords
+  (I|i)(F|f)                                 { return ASPTypes.ASP_KEYWORD_IF; }
+  (T|t)(H|h)(E|e)(N|n)                       { return ASPTypes.ASP_KEYWORD_THEN; }
+  (E|e)(L|l)(S|s)(E|e)                       { return ASPTypes.ASP_KEYWORD_ELSE; }
+  (E|e)(N|n)(D|d)                            { return ASPTypes.ASP_KEYWORD_END; }
+  (F|f)(O|o)(R|r)                            { return ASPTypes.ASP_KEYWORD_FOR; }
+  (N|n)(E|e)(X|x)(T|t)                       { return ASPTypes.ASP_KEYWORD_NEXT; }
+  (D|d)(I|i)(M|m)                            { return ASPTypes.ASP_KEYWORD_DIM; }
+  (S|s)(E|e)(T|t)                            { return ASPTypes.ASP_KEYWORD_SET; }
+  (W|w)(H|h)(I|i)(L|l)(E|e)                  { return ASPTypes.ASP_KEYWORD_WHILE; }
+  (W|w)(E|e)(N|n)(D|d)                       { return ASPTypes.ASP_KEYWORD_WEND; }
+  (F|f)(U|u)(N|n)(C|c)(T|t)(I|i)(O|o)(N|n)   {
+          yybegin(FUNCTION);
+          return ASPTypes.ASP_KEYWORD_FUNCTION;
+  }
+  (S|s)(U|u)(B|b)                            { return ASPTypes.ASP_KEYWORD_SUB; }
+  (C|c)(A|a)(L|l)(L|l)                       { return ASPTypes.ASP_KEYWORD_CALL; }
+  (N|n)(E|e)(W|w) {
+          yybegin(NEW_INSTANCE);
+          return ASPTypes.ASP_KEYWORD_NEW;
+  }
+
+
+  "(" { return ASPTypes.ASP_LPAREN; }
+  ")" { return ASPTypes.ASP_RPAREN; }
+  "," { return ASPTypes.ASP_COMMA; }
 
   // Identifiers (variables, function names, etc.)
   [a-zA-Z_][a-zA-Z0-9_]*  { return ASPTypes.ASP_IDENTIFIER; }
 
-  // Numeric literals (integer and floating point)
-  [0-9]+(\\.[0-9]+)?      { return ASPTypes.ASP_NUMBER; }
+    // Numeric literals (integer and floating point)
+    [0-9].*[0-9]+      { return ASPTypes.ASP_NUMBER; }
 
-  // String literals (double-quoted)
-  \"([^\"\\]|\\.)*\"      { return ASPTypes.ASP_STRING; }
+    // String literals (double-quoted)
+    \"[^\"\r\n]*\"      { return ASPTypes.ASP_STRING; }
 
-  // String literals (single-quoted)
-  \'([^\'\\]|\\.)*\'      { return ASPTypes.ASP_STRING; }
+    // Comment
 
-  // Operators and punctuation
-  "=="     { return ASPTypes.ASP_OPERATOR; }
-  "!="     { return ASPTypes.ASP_OPERATOR; }
-  "="      { return ASPTypes.ASP_OPERATOR; }
-  "\\+"    { return ASPTypes.ASP_OPERATOR; }
-  "-"      { return ASPTypes.ASP_OPERATOR; }
-  "\\*"    { return ASPTypes.ASP_OPERATOR; }
-  "/"      { return ASPTypes.ASP_OPERATOR; }
-  "%"      { return ASPTypes.ASP_OPERATOR; }
-  "\\("    { return ASPTypes.ASP_PARENTHESIS; }
-  "\\)"    { return ASPTypes.ASP_PARENTHESIS; }
-  ";"      { return ASPTypes.ASP_SEMICOLON; }
-  ","      { return ASPTypes.ASP_COMMA; }
-  "\\."    { return ASPTypes.ASP_DOT; }
+    // Arithmetic operators
+    "+"      { return ASPTypes.ASP_OPERATOR; }
+    "-"      { return ASPTypes.ASP_OPERATOR; }
+    "*"      { return ASPTypes.ASP_OPERATOR; }
+    "/"      { return ASPTypes.ASP_OPERATOR; }
+    "%"      { return ASPTypes.ASP_OPERATOR; }
+    "^"      { return ASPTypes.ASP_OPERATOR; }
+
+    // Comparison operators
+    "="      { return ASPTypes.ASP_OPERATOR_ASSIGNMENT; }
+    "<>"     { return ASPTypes.ASP_OPERATOR; }
+    ">"      { return ASPTypes.ASP_OPERATOR; }
+    "<"      { return ASPTypes.ASP_OPERATOR; }
+    "<="     { return ASPTypes.ASP_OPERATOR; }
+    ">="     { return ASPTypes.ASP_OPERATOR; }
+
+    // Logical operators
+    (A|a)(N|n)(D|d)     { return ASPTypes.ASP_LOGICAL_OPERATOR; }
+    (O|o)(R|r)          { return ASPTypes.ASP_LOGICAL_OPERATOR; }
+    (N|n)(O|o)(T|t)     { return ASPTypes.ASP_LOGICAL_OPERATOR; }
+    (X|x)(O|o)(R|r)     { return ASPTypes.ASP_LOGICAL_OPERATOR; }
+
+    // Concatination operators
+    "&"      { return ASPTypes.ASP_OPERATOR; }
+
+  <NEW_INSTANCE> {
+      \r?\n {
+          yybegin(ASP_CODE);
+      }
+
+      [ \t]+    { /* skip whitespace */ }
+
+      [a-zA-Z_][a-zA-Z0-9_]* {
+        yybegin(ASP_CODE);
+        return ASPTypes.ASP_INSTANCE;
+      }
+
+      . {
+          yybegin(ASP_CODE);
+          return ASPTypes.ASP_OTHER;
+      }
+  }
+
+  <FUNCTION> {
+    \r?\n {
+      yybegin(ASP_CODE);
+    }
+
+    [ \t]+    { /* skip whitespace */ }
+
+    [a-zA-Z_][a-zA-Z0-9_]* {
+        yybegin(ASP_CODE);
+        return ASPTypes.ASP_FUNCTION_NAME;
+    }
+
+    . {
+      yybegin(ASP_CODE);
+      return ASPTypes.ASP_OTHER;
+    }
+  }
 
   // Whitespace: skip spaces, tabs, newlines in ASP mode.
   [ \t\r\n]+ { /* skip whitespace */ }
 
   // Any other single character not matched above
-  .      { return ASPTypes.ASP_OTHER; }
+    .   { return ASPTypes.ASP_OTHER; }
 }

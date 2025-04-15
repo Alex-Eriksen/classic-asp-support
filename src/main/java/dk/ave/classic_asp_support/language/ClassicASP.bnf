@@ -13,22 +13,19 @@
     tokenTypeClass="dk.ave.classic_asp_support.language.psi.ASPTokenType"
 }
 
+
 /*
- * The starting point of the ASP file.
- * An ASP file is a sequence of content items, which may be HTML, ASP code or simple newlines.
+ * Root entry for ASP file.
  */
 aspFile ::= aspContent*;
 
 /*
- * Each content item in the file can be one of:
- * - HTML content (plain text, tags, or comments)
- * - An embedded ASP block
- * - A newline (CRLF)
+ * Each content item can be HTML content, an ASP block, or a newline.
  */
 private aspContent ::= htmlContent | aspBlock | CRLF;
 
 /*
- * HTML content is modeled as either plain text, a tag, or an HTML comment.
+ * HTML content unchanged...
  */
 htmlContent ::= HTML_TEXT
                 | HTML_LESS_THAN
@@ -36,12 +33,10 @@ htmlContent ::= HTML_TEXT
                 | htmlComment;
 
 htmlElement ::= HTML_TAG;
-
 htmlComment ::= HTML_COMMENT_START htmlContent* HTML_COMMENT_END;
 
 /*
- * An ASP block can be either a code block or an echo block.
- * They start with different tokens (<% for code, <%= for echo) and both end with ASP_CODE_END.
+ * ASP block: supports both code and echo types.
  */
 aspBlock ::= aspCodeBlock | aspEchoBlock;
 
@@ -49,62 +44,70 @@ aspCodeBlock ::= ASP_CODE_START aspStatements? ASP_CODE_END;
 aspEchoBlock ::= ASP_ECHO_START aspExpression? ASP_CODE_END;
 
 /*
- * Within an ASP block, you can have a series of statements.
+ * The sequence of statements inside an ASP block.
  */
 aspStatements ::= aspStatement+;
 
 /*
- * A statement may be one of several forms:
- * - Conditional statements (if...then...else...end)
- * - For loops
- * - Assignments
- * - Expression statements (optionally ended with a semicolon)
- * - Or any unclassified content (ASP_OTHER)
+ * A statement may be one of several forms. We add "aspProcedure" to support
+ * function and sub definitions.
  */
-aspStatement ::= aspIfStatement
+aspStatement ::= aspProcedure
+               | aspIfStatement
+               | aspCallFunction
                | aspForStatement
+               | aspWhileStatement
+               | aspNewInstanceStatement
                | aspAssignment
                | aspExpressionStatement
+               | aspCommentExpression
+               | aspDimStatement
+               | aspSetStatement
                | ASP_OTHER;
 
 /*
- * Example of an if-statement in ASP (VBScript style).
+ * New productions for procedure definitions.
+ */
+aspProcedure ::= aspFunctionDefinition | aspSubDefinition;
+
+aspFunctionDefinition ::= ASP_KEYWORD_FUNCTION ASP_FUNCTION_NAME functionParameterList? CR LF aspStatements? CR LF ASP_KEYWORD_END ASP_KEYWORD_FUNCTION;
+
+aspSubDefinition ::= ASP_KEYWORD_SUB ASP_IDENTIFIER functionParameterList? CRLF aspStatements? ASP_KEYWORD_END ASP_KEYWORD_SUB;
+
+aspCallFunction ::= ASP_KEYWORD_CALL aspFunctionDefinition
+
+/*
+ * A comma-separated parameter list enclosed in parentheses.
+ */
+functionParameterList ::= ASP_LPAREN parameterList? ASP_RPAREN;
+parameterList ::= ASP_IDENTIFIER | ASP_IDENTIFIER ( ASP_COMMA ASP_IDENTIFIER )*;
+
+/*
+ * Expression rules.
+ * Modify aspTerm to support object member access using dot notation.
+ */
+aspExpression ::= ASP_LOGICAL_OPERATOR? aspTerm ( ASP_OPERATOR aspTerm )*;
+
+/*
+ * Instead of a flat aspTerm, we introduce aspPrimary so that it can optionally
+ * be followed by one or more dot-access parts.
+ */
+aspTerm ::= aspPrimary;
+
+aspPrimary ::= ( ASP_IDENTIFIER | ASP_NUMBER | ASP_STRING | ASP_LPAREN aspExpression ASP_RPAREN )
+             ( ASP_DOT ( ASP_IDENTIFIER | ASP_NUMBER | ASP_STRING | ASP_LPAREN aspExpression ASP_RPAREN ) )*;
+
+/*
+ * Other existing rules remain unchanged (if, for, assignment, etc.).
  */
 aspIfStatement ::= ASP_KEYWORD_IF aspExpression ASP_KEYWORD_THEN aspStatements ( ASP_KEYWORD_ELSE aspStatements )? ASP_KEYWORD_END;
-
-/*
- * Example of a For-loop. (Optionally, you can specify an operator and a “to” clause if desired.)
- * Note: If you need to support a “to” clause, ensure your lexer and token types include a token (e.g. ASP_KEYWORD_TO).
- */
 aspForStatement ::= ASP_KEYWORD_FOR ASP_IDENTIFIER ASP_OPERATOR aspExpression ( ASP_KEYWORD_TO aspExpression )? aspStatements? ASP_KEYWORD_NEXT;
-
-/*
- * An assignment is modeled as an identifier, an operator, and an expression.
- */
+aspWhileStatement ::= ASP_KEYWORD_WHILE aspExpression aspStatements? ASP_KEYWORD_WEND;
 aspAssignment ::= ASP_IDENTIFIER ASP_OPERATOR aspExpression;
+aspExpressionStatement ::= aspExpression;
+aspCommentExpression ::= aspExpressionStatement? ASP_COMMENT;
+aspDimStatement ::= ASP_KEYWORD_DIM aspCommaSeparatedIdentifier;
+aspSetStatement ::= ASP_KEYWORD_SET ASP_IDENTIFIER ASP_OPERATOR_ASSIGNMENT? aspExpression;
+aspNewInstanceStatement ::= ASP_KEYWORD_SET ASP_IDENTIFIER ASP_OPERATOR_ASSIGNMENT ASP_KEYWORD_NEW ASP_INSTANCE
 
-/*
- * An expression statement is an expression that can optionally be ended with a semicolon.
- */
-aspExpressionStatement ::= aspExpression ASP_SEMICOLON?;
-
-/*
- * A very simple expression rule that supports a sequence of terms joined by operators.
- */
-aspExpression ::= aspTerm ( ASP_OPERATOR aspTerm )*;
-
-/*
- * An expression term may be:
- * - An identifier, a number, or a string
- * - A parenthesized expression (using literal "(" and ")" for grouping)
- * - A fallback ASP_OTHER token (e.g. if no other rule matches)
- */
-aspTerm ::= ASP_IDENTIFIER
-          | ASP_NUMBER
-          | ASP_STRING
-          | ASP_KEYWORD_DIM
-          | ASP_KEYWORD_SET
-          | ASP_PARENTHESIS
-          | ASP_DOT
-          | ASP_COMMA
-          | ASP_OTHER;
+aspCommaSeparatedIdentifier ::= aspTerm | ( aspTerm ASP_COMMA )*;

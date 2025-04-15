@@ -16,7 +16,12 @@ import java.util.Map;
 public final class ASPColorSettingsPage implements ColorSettingsPage {
 
     private static final AttributesDescriptor[] DESCRIPTORS = new AttributesDescriptor[]{
-            new AttributesDescriptor("Keyword", ASPSyntaxHighlighter.KEY)
+            new AttributesDescriptor("Keyword", ASPSyntaxHighlighter.KEY),
+            new AttributesDescriptor("Code block", ASPSyntaxHighlighter.CODE_BLOCK),
+            new AttributesDescriptor("Operators", ASPSyntaxHighlighter.OPERATOR),
+            new AttributesDescriptor("Class", ASPSyntaxHighlighter.INSTANCE),
+            new AttributesDescriptor("Identifiers//String", ASPSyntaxHighlighter.STRING),
+            new AttributesDescriptor("Identifiers//Variable", ASPSyntaxHighlighter.IDENTIFIER),
     };
 
     @Override
