@@ -68,7 +68,7 @@ public class ASPSyntaxHighlighter extends SyntaxHighlighterBase {
         if(tokenType.equals(ASPTypes.ASP_INSTANCE)) {
             return INSTANCES_KEYS;
         }
-        if(tokenType.equals(ASPTypes.ASP_FUNCTION_NAME)) {
+        if(tokenType.equals(ASPTypes.ASP_FUNCTION_NAME) || tokenType.equals(ASPTypes.ASP_FUNCTION_CALL)) {
             return PROCEDURES_KEYS;
         }
         if(tokenType.equals(ASPTypes.ASP_CODE_START) || tokenType.equals(ASPTypes.ASP_CODE_END) || tokenType.equals(ASPTypes.ASP_ECHO_START)) {

@@ -15,6 +15,7 @@ import dk.ave.classic_asp_support.language.psi.ASPTypes;
 %state ASP_CODE
 %state NEW_INSTANCE
 %state FUNCTION
+%state FUNCTION_CALL
 
 %%
 
@@ -74,6 +75,9 @@ import dk.ave.classic_asp_support.language.psi.ASPTypes;
   ")" { return ASPTypes.ASP_RPAREN; }
   "," { return ASPTypes.ASP_COMMA; }
 
+      // Concatination operators
+      "&"      { return ASPTypes.ASP_OPERATOR; }
+
       // Arithmetic operators
       "+"      { return ASPTypes.ASP_OPERATOR; }
       "-"      { return ASPTypes.ASP_OPERATOR; }
@@ -96,11 +100,10 @@ import dk.ave.classic_asp_support.language.psi.ASPTypes;
       (N|n)(O|o)(T|t)     { return ASPTypes.ASP_LOGICAL_OPERATOR; }
       (X|x)(O|o)(R|r)     { return ASPTypes.ASP_LOGICAL_OPERATOR; }
 
-      // Concatination operators
-      "&"      { return ASPTypes.ASP_OPERATOR; }
-
     // Numeric literals (integer and floating point)
     [0-9]+(\.[0-9]+)?      { return ASPTypes.ASP_NUMBER; }
+
+    ^[a-zA-Z_][a-zA-Z0-9_]*\(([a-zA-Z_]*|\"[^\"\r\n]*\"*|[0-9]+(\.[0-9]+)?)*\)$ { yybegin(FUNCTION_CALL); }
 
   // Identifiers (variables, function names, etc.)
   [a-zA-Z_][a-zA-Z0-9_]*  { return ASPTypes.ASP_IDENTIFIER; }
@@ -147,7 +150,18 @@ import dk.ave.classic_asp_support.language.psi.ASPTypes;
     }
   }
 
-  // Whitespace: skip spaces, tabs, newlines in ASP mode.
+  <FUNCTION_CALL> {
+      [ \t\r\n]+ {
+        yybegin(ASP_CODE);
+      }
+
+      [a-zA-Z_][a-zA-Z0-9_]* {
+          yybegin(ASP_CODE);
+          return ASPTypes.ASP_FUNCTION_NAME;
+      }
+  }
+
+  // Whitespace: skip spaces, tabs, newlines  ASP mode.
   [ \t\r\n]+ { /* skip whitespace */ }
 
   // Any other single character not matched above

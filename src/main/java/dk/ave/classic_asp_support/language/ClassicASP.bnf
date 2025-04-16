@@ -56,6 +56,7 @@ aspStatement ::= aspProcedure
                | aspIfStatement
                | aspCallFunctionDiscardReturn
                | aspForStatement
+               | aspFunctionCall
                | aspWhileStatement
                | aspNewInstanceStatement
                | aspAssignment
@@ -63,7 +64,6 @@ aspStatement ::= aspProcedure
                | aspCommentExpression
                | aspDimStatement
                | aspSetStatement
-               | functionCall
                | ASP_OTHER;
 
 /*
@@ -73,7 +73,7 @@ aspProcedure ::= aspFunctionDefinition | aspSubDefinition;
 
 aspFunctionDefinition ::= ASP_KEYWORD_FUNCTION ASP_FUNCTION_NAME functionParameterList? CR LF aspStatements? CR LF ASP_KEYWORD_END ASP_KEYWORD_FUNCTION;
 
-aspSubDefinition ::= ASP_KEYWORD_SUB ASP_IDENTIFIER functionParameterList? CRLF aspStatements? ASP_KEYWORD_END ASP_KEYWORD_SUB;
+aspSubDefinition ::= ASP_KEYWORD_SUB ASP_IDENTIFIER functionParameterList? CR LF aspStatements? ASP_KEYWORD_END ASP_KEYWORD_SUB;
 
 aspCallFunctionDiscardReturn ::= ASP_KEYWORD_CALL ASP_FUNCTION_NAME functionParameterList?
 
@@ -81,7 +81,6 @@ aspCallFunctionDiscardReturn ::= ASP_KEYWORD_CALL ASP_FUNCTION_NAME functionPara
  * A comma-separated parameter list enclosed in parentheses.
  */
 functionParameterList ::= ASP_LPAREN parameterList? ASP_RPAREN;
-functionCall ::= ASP_FUNCTION_NAME ASP_LPAREN [argumentList] ASP_RPAREN;
 parameterList ::= ASP_IDENTIFIER ( ASP_COMMA ASP_IDENTIFIER )*;
 argumentList ::= aspTerm ( ASP_COMMA aspTerm )*;
 
@@ -89,15 +88,16 @@ argumentList ::= aspTerm ( ASP_COMMA aspTerm )*;
  * Expression rules.
  * Modify aspTerm to support object member access using dot notation.
  */
-aspExpression ::= ASP_LOGICAL_OPERATOR? aspPrimary ( ASP_OPERATOR aspPrimary )*;
+aspExpression ::= ASP_LOGICAL_OPERATOR? aspTerm ( ( ASP_OPERATOR | ASP_OPERATOR_ASSIGNMENT ) ASP_LOGICAL_OPERATOR? aspTerm )*;
 
 /*
  * Instead of a flat aspTerm, we introduce aspPrimary so that it can optionally
  * be followed by one or more dot-access parts.
  */
-aspTerm ::= functionCall | aspPrimary;
+aspTerm ::= ASP_IDENTIFIER | aspPrimary | aspFunctionCall;
+aspFunctionCall ::= ASP_FUNCTION_NAME ASP_LPAREN argumentList? ASP_RPAREN;
 
-aspPrimary ::= ( ASP_IDENTIFIER | ASP_NUMBER | ASP_STRING);
+aspPrimary ::= ASP_NUMBER | ASP_STRING;
 
 /*
  * Other existing rules remain unchanged (if, for, assignment, etc.).
